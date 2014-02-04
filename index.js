@@ -9,6 +9,19 @@ http.createServer(function(req, res) {
 
   var u = url.parse(req.url);
 
+  if (u.pathname === '/') {
+    fs.readFile(__dirname + '/index.html', function(err, data) {
+      if (err || !data) {
+        res.writeHead(500);
+        return res.end();
+      }
+
+      res.writeHead(200, {'Content-Type': 'text/html'})
+      res.end(data);
+    });
+    return;
+  }
+
   var match = /\d+/.exec(u.pathname);
   if (!match) {
     res.writeHead(404);
