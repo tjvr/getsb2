@@ -5,11 +5,15 @@ var querystring = require('querystring');
 var request = require('request');
 var archiver = require('archiver');
 
-function extend(o, p) {
-  for (var key in p) {
-    o[key] = p[key];
+function copy(o, p) {
+  var c = {};
+  for (var key in o) {
+    c[key] = o[key];
   }
-  return o;
+  for (var key in p) {
+    c[key] = p[key];
+  }
+  return c;
 }
 
 var cors = {
@@ -32,7 +36,7 @@ http.createServer(function(req, res) {
         return res.end();
       }
 
-      res.writeHead(200, extend(cors, {'Content-Type': path.split('.').pop() === 'html' ? 'text/html' : 'text/x-cross-domain-policy'}));
+      res.writeHead(200, copy(cors, {'Content-Type': path.split('.').pop() === 'html' ? 'text/html' : 'text/x-cross-domain-policy'}));
       res.end(data);
     });
     return;
@@ -59,7 +63,7 @@ http.createServer(function(req, res) {
       return res.end();
     }
 
-    res.writeHead(200, extend(cors, {
+    res.writeHead(200, copy(cors, {
       'Content-Type': zip ? 'application/zip' : 'application/octet-stream',
       'Content-Disposition': 'attachment;filename=' + id + '.' + (zip ? 'zip' : 'sb2')
     }));
@@ -90,9 +94,9 @@ http.createServer(function(req, res) {
     parse(project);
 
     archive.append(JSON.stringify(project), { name: 'project.json' });
-    archive.finalize();
+    archive.finalize(function() {
+      res.end();
+    });
   });
-
-  return;
 
 }).listen(process.env.PORT || 8080, process.env.HOST);
