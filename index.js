@@ -5,18 +5,34 @@ var querystring = require('querystring');
 var request = require('request');
 var archiver = require('archiver');
 
+function extend(o, p) {
+  for (var key in p) {
+    o[key] = p[key];
+  }
+  return o;
+}
+
+var cors = {
+  'Access-Control-Allow-Origin': '*'
+};
+
 http.createServer(function(req, res) {
 
   var u = url.parse(req.url);
 
-  if (u.pathname === '/') {
-    fs.readFile(__dirname + '/index.html', function(err, data) {
+  var path =
+    u.pathname === '/' || u.pathname === '/index.html' ? '/index.html' :
+    u.pathname === '/crossdomain.xml' ? '/crossdomain.xml' :
+    null;
+
+  if (path != null) {
+    fs.readFile(__dirname + path, function(err, data) {
       if (err || !data) {
-        res.writeHead(500);
+        res.writeHead(500, cors);
         return res.end();
       }
 
-      res.writeHead(200, {'Content-Type': 'text/html'})
+      res.writeHead(200, extend(cors, {'Content-Type': path.split('.').pop() === 'html' ? 'text/html' : 'text/xml'}));
       res.end(data);
     });
     return;
@@ -24,7 +40,7 @@ http.createServer(function(req, res) {
 
   var match = /\d+/.exec(u.pathname);
   if (!match) {
-    res.writeHead(404);
+    res.writeHead(404, cors);
     return res.end();
   }
 
@@ -35,18 +51,18 @@ http.createServer(function(req, res) {
 
   request('http://scratch.mit.edu/internalapi/project/' + id + '/get/', function(err, r, body) {
     if (err) {
-      res.writeHead(500);
+      res.writeHead(500, cors);
       return res.end();
     }
     if (r.statusCode !== 200) {
-      res.writeHead(404);
+      res.writeHead(404, cors);
       return res.end();
     }
 
-    res.writeHead(200, {
+    res.writeHead(200, extend(cors, {
       'Content-Type': zip ? 'application/zip' : 'application/octet-stream',
       'Content-Disposition': 'attachment;filename=' + id + '.' + (zip ? 'zip' : 'sb2')
-    });
+    }));
 
     var project = JSON.parse(body);
     var nextID = 0;
