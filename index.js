@@ -32,7 +32,7 @@ http.createServer(function(req, res) {
         return res.end();
       }
 
-      res.writeHead(200, extend(cors, {'Content-Type': path.split('.').pop() === 'html' ? 'text/html' : 'text/xml'}));
+      res.writeHead(200, extend(cors, {'Content-Type': path.split('.').pop() === 'html' ? 'text/html' : 'text/x-cross-domain-policy'}));
       res.end(data);
     });
     return;
