@@ -53,7 +53,7 @@ http.createServer(function(req, res) {
 
   var zip = q.zip != null;
 
-  request('http://scratch.mit.edu/internalapi/project/' + id + '/get/', function(err, r, body) {
+  request('http://projects.scratch.mit.edu/internalapi/project/' + id + '/get/', function(err, r, body) {
     if (err) {
       res.writeHead(500, cors);
       return res.end();
@@ -85,7 +85,7 @@ http.createServer(function(req, res) {
     function addResource(thing, id, md5) {
       if (!md5) return;
       thing[id] = ++nextID;
-      archive.append(request('http://scratch.mit.edu/internalapi/asset/' + md5 + '/get/'), { name: nextID + '.' + md5.split('.').pop() });
+      archive.append(request('http://cdn.scratch.mit.edu/internalapi/asset/' + md5 + '/get/'), { name: nextID + '.' + md5.split('.').pop() });
     }
 
     var archive = archiver('zip');
