@@ -42,16 +42,16 @@ http.createServer(function(req, res) {
     return;
   }
 
-  var match = /\d+/.exec(u.pathname);
+  var match = /(\d+)(\.zip)?/.exec(u.pathname);
   if (!match) {
     res.writeHead(404, cors);
     return res.end();
   }
 
-  var id = +match[0];
+  var id = +match[1];
   var q = querystring.parse(u.query);
 
-  var zip = q.zip != null;
+  var zip = !!match[2] || q.zip != null;
 
   request('http://projects.scratch.mit.edu/internalapi/project/' + id + '/get/', {encoding: null}, function(err, r, body) {
     if (err) {
