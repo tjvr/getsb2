@@ -53,7 +53,7 @@ http.createServer(function(req, res) {
 
   var zip = q.zip != null;
 
-  request('http://projects.scratch.mit.edu/internalapi/project/' + id + '/get/', function(err, r, body) {
+  request('http://projects.scratch.mit.edu/internalapi/project/' + id + '/get/', {encoding: null}, function(err, r, body) {
     if (err) {
       res.writeHead(500, cors);
       return res.end();
@@ -68,7 +68,11 @@ http.createServer(function(req, res) {
       'Content-Disposition': 'attachment;filename=' + id + '.' + (zip ? 'zip' : 'sb2')
     }));
 
-    var project = JSON.parse(body);
+    try {
+      var project = JSON.parse(body);
+    } catch (e) {
+      return res.end(body);
+    }
     var nextID = 0;
 
     function parse(thing) {
