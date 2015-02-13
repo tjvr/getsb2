@@ -22,17 +22,23 @@ h1 > span {
   margin-left: 1em;
 }
 
-pre {
-  background: rgba(0, 0, 0, .05);
-  border: 1px solid rgba(0, 0, 0, .2);
-  padding: .5em 1em;
-  border-radius: 6px;
+ul {
+  list-style: none;
+  padding: 0 0 0 40px;
 }
-pre a {
-  color: #04a;
+li {
+  margin-bottom: 0.2em;
+}
+a {
+  color: rgba(0, 85, 204, 0.6);
+  font-weight: 100;
   text-decoration: none;
 }
-pre a:hover {
+a strong {
+  color: rgb(0, 85, 204);
+  font-weight: 400;
+}
+a:hover {
   text-decoration: underline;
 }
 
@@ -40,7 +46,11 @@ pre a:hover {
 
 <h1>getsb2<span>makes sb2 files from project IDs.</span></h1>
 <p>Just append a project ID or URL after the <code>/</code>.</p>
-<pre><a href=http://getsb2.herokuapp.com/15832807>http://getsb2.herokuapp.com/15832807</a></pre>
-<pre><a href=http://getsb2.herokuapp.com/http://scratch.mit.edu/projects/15832807/>http://getsb2.herokuapp.com/http://scratch.mit.edu/projects/15832807/</a></pre>
+<ul>
+  <li><a href=/15832807>getsb2.herokuapp.com/<strong>15832807</strong></a>
+  <li><a href=/http://scratch.mit.edu/projects/15832807/>getsb2.herokuapp.com/<strong>http://scratch.mit.edu/projects/15832807/</strong></a>
+</ul>
 <p>You can also add <code>.zip</code> to download the contents of the sb2 as a zip file.</p>
-<pre><a href=http://getsb2.herokuapp.com/15832807.zip>http://getsb2.herokuapp.com/15832807.zip</a></pre>
+<ul>
+  <li><a href=/15832807.zip>getsb2.herokuapp.com/<strong>15832807.zip</strong></a>
+</ul>
