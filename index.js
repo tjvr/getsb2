@@ -97,7 +97,7 @@ http.createServer(function(req, res) {
 
     parse(project);
 
-    archive.append(JSON.stringify(project), { name: 'project.json' });
+    archive.append(body, { name: 'project.json' });
     archive.finalize(function() {
       res.end();
     });
