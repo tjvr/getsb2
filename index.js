@@ -5,6 +5,8 @@ var querystring = require('querystring');
 var request = require('request');
 var archiver = require('archiver');
 
+var summarize = require('./summarize');
+
 function copy(o, p) {
   var c = {};
   for (var key in o) {
@@ -42,7 +44,7 @@ http.createServer(function(req, res) {
     return;
   }
 
-  var match = /(\d+)(\.zip)?/.exec(u.pathname);
+  var match = /(\d+)(?:\.(zip|txt))?/.exec(u.pathname);
   if (!match) {
     res.writeHead(404, cors);
     return res.end();
@@ -51,7 +53,9 @@ http.createServer(function(req, res) {
   var id = +match[1];
   var q = querystring.parse(u.query);
 
-  var zip = !!match[2] || q.zip != null;
+  var ext = match[2] || 'sb2';
+  var zip = ext === 'zip' || q.zip != null;
+  var txt = ext === 'txt';
 
   request('http://projects.scratch.mit.edu/internalapi/project/' + id + '/get/', {encoding: null}, function(err, r, body) {
     if (err) {
@@ -64,15 +68,24 @@ http.createServer(function(req, res) {
     }
 
     res.writeHead(200, copy(cors, {
-      'Content-Type': zip ? 'application/zip' : 'application/octet-stream',
-      'Content-Disposition': 'attachment;filename=' + id + '.' + (zip ? 'zip' : 'sb2')
+      'Content-Type': zip ? 'application/zip' : txt ? 'text/plain' : 'application/octet-stream',
+      'Content-Disposition': 'attachment;filename=' + id + '.' + ext
     }));
 
     try {
       var project = JSON.parse(body);
     } catch (e) {
+      if (txt) {
+        return res.end('Summaries of projects uploaded with the offline editor aren\'t available yet. Check back soon!');
+      }
       return res.end(body);
     }
+
+    if (txt) {
+      summarize(res).project(project);
+      return res.end();
+    }
+
     var nextID = 0;
 
     function parse(thing) {
