@@ -4,6 +4,9 @@ var url = require('url');
 var querystring = require('querystring');
 var request = require('request');
 var archiver = require('archiver');
+var resumer = require('resumer');
+var collect = require('collect-stream');
+var unzip = require('unzip');
 
 var summarize = require('./summarize');
 
@@ -67,19 +70,40 @@ http.createServer(function(req, res) {
       return res.end();
     }
 
-    res.writeHead(200, copy(cors, {
+    var headers = copy(cors, {
       'Content-Type': zip ? 'application/zip' : txt ? 'text/plain' : 'application/octet-stream',
       'Content-Disposition': 'attachment;filename=' + id + '.' + ext
-    }));
+    });
 
     try {
       var project = JSON.parse(body);
     } catch (e) {
-      if (txt) {
-        return res.end('Summaries of projects uploaded with the offline editor aren\'t available yet. Check back soon!');
+      if (!txt) {
+        res.writeHead(200, headers);
+        return res.end(body);
       }
-      return res.end(body);
+      resumer().queue(body).end().pipe(unzip.Parse()).on('entry', function(entry) {
+        if (!/\.json$/.test(entry.path)) return;
+        collect(entry, function(err, body2) {
+          if (err) {
+            res.writeHead(500, cors);
+            return res.end();
+          }
+          try {
+            var project = JSON.parse(body2);
+          } catch (e) {
+            res.writeHead(500, cors);
+            return res.end();
+          }
+          res.writeHead(200, headers);
+          summarize(res).project(project);
+          res.end();
+        });
+      });
+      return;
     }
+
+    res.writeHead(200, headers);
 
     if (txt) {
       summarize(res).project(project);
