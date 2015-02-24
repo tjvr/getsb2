@@ -47,7 +47,7 @@ http.createServer(function(req, res) {
     return;
   }
 
-  var match = /(\d+)(?:\.(zip|txt))?/.exec(u.pathname);
+  var match = /(\d+)(?:\.(zip|txt|json))?/.exec(u.pathname);
   if (!match) {
     res.writeHead(404, cors);
     return res.end();
@@ -59,6 +59,7 @@ http.createServer(function(req, res) {
   var ext = match[2] || 'sb2';
   var zip = ext === 'zip' || q.zip != null;
   var txt = ext === 'txt';
+  var json = ext === 'json';
 
   request('http://projects.scratch.mit.edu/internalapi/project/' + id + '/get/', {encoding: null}, function(err, r, body) {
     if (err) {
@@ -71,14 +72,14 @@ http.createServer(function(req, res) {
     }
 
     var headers = copy(cors, {
-      'Content-Type': zip ? 'application/zip' : txt ? 'text/plain' : 'application/octet-stream',
+      'Content-Type': zip ? 'application/zip' : json ? 'application/json' : txt ? 'text/plain' : 'application/octet-stream',
       'Content-Disposition': 'attachment;filename=' + id + '.' + ext
     });
 
     try {
       var project = JSON.parse(body);
     } catch (e) {
-      if (!txt) {
+      if (!txt && !json) {
         res.writeHead(200, headers);
         return res.end(body);
       }
@@ -88,6 +89,10 @@ http.createServer(function(req, res) {
           if (err) {
             res.writeHead(500, cors);
             return res.end();
+          }
+          if (json) {
+            res.writeHead(200, headers);
+            return res.end(body2);
           }
           try {
             var project = JSON.parse(body2);
@@ -108,6 +113,9 @@ http.createServer(function(req, res) {
     if (txt) {
       summarize(res).project(project);
       return res.end();
+    }
+    if (json) {
+      return res.end(body);
     }
 
     var nextID = 0;
